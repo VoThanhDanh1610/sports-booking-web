@@ -2,10 +2,10 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import { Card, Button, DatePicker, Typography, Spin, Row, Col, Tag, Divider } from 'antd';
+import { Card, Button, DatePicker, Typography, Spin, Row, Col, Tag, Divider, Input, Space } from 'antd';
 import {
   ArrowLeftOutlined, CalendarOutlined, ClockCircleOutlined,
-  CheckCircleOutlined, EnvironmentOutlined, DollarCircleOutlined
+  CheckCircleOutlined, EnvironmentOutlined, DollarCircleOutlined, TagOutlined
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 
@@ -20,6 +20,10 @@ function BookingPage() {
   const [selectedSlots, setSelectedSlots] = useState([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [promoCode, setPromoCode] = useState('');
+  const [promoVerifying, setPromoVerifying] = useState(false);
+  const [promoResult, setPromoResult] = useState(null);
+  const [promoError, setPromoError] = useState(null);
 
   useEffect(() => {
     const fetchField = async () => {
@@ -56,6 +60,8 @@ function BookingPage() {
 
   const toggleSlot = (slot) => {
     if (slot.status === 'booked') return;
+    setPromoResult(null);
+    setPromoError(null);
     setSelectedSlots(prev =>
       prev.includes(slot._id)
         ? prev.filter(id => id !== slot._id)
@@ -64,6 +70,28 @@ function BookingPage() {
   };
 
   const totalPrice = field ? field.pricePerHour * selectedSlots.length : 0;
+
+  const handleVerifyPromo = async () => {
+    if (!promoCode.trim()) return;
+    if (totalPrice === 0) { toast.warning('Vui lòng chọn khung giờ trước!'); return; }
+    setPromoVerifying(true);
+    setPromoResult(null);
+    setPromoError(null);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.post(
+        'http://localhost:5000/api/promotions/verify',
+        { code: promoCode.trim().toUpperCase(), orderValue: totalPrice },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setPromoResult(res.data);
+      toast.success('Áp dụng mã giảm giá thành công!');
+    } catch (err) {
+      setPromoError(err.response?.data?.message || 'Mã không hợp lệ!');
+    } finally {
+      setPromoVerifying(false);
+    }
+  };
 
   const handleBooking = async () => {
     const token = localStorage.getItem('token');
@@ -80,7 +108,12 @@ function BookingPage() {
     try {
       await axios.post(
         'http://localhost:5000/api/bookings',
-        { fieldId, date: selectedDate.format('YYYY-MM-DD'), timeSlotIds: selectedSlots },
+        {
+          fieldId,
+          date: selectedDate.format('YYYY-MM-DD'),
+          timeSlotIds: selectedSlots,
+          ...(promoResult && promoCode ? { promoCode: promoCode.trim().toUpperCase() } : {})
+        },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       toast.success('Đặt sân thành công! 🎉');
@@ -220,12 +253,55 @@ function BookingPage() {
               <Text strong>{field.pricePerHour.toLocaleString()}đ</Text>
             </div>
             <Divider />
+            <div style={{ marginBottom: 14 }}>
+              <Text type="secondary" style={{ display: 'block', marginBottom: 6 }}>
+                <TagOutlined /> Mã giảm giá:
+              </Text>
+              <Space.Compact style={{ width: '100%' }}>
+                <Input
+                  placeholder="Nhập mã..."
+                  value={promoCode}
+                  onChange={e => { setPromoCode(e.target.value.toUpperCase()); setPromoResult(null); setPromoError(null); }}
+                  style={{ textTransform: 'uppercase' }}
+                  disabled={selectedSlots.length === 0}
+                />
+                <Button
+                  type="primary"
+                  loading={promoVerifying}
+                  onClick={handleVerifyPromo}
+                  disabled={selectedSlots.length === 0 || !promoCode.trim()}
+                >
+                  Áp dụng
+                </Button>
+              </Space.Compact>
+              {promoResult && (
+                <Text style={{ color: '#52c41a', fontSize: 12, marginTop: 4, display: 'block' }}>
+                  Giảm: {promoResult.discount?.toLocaleString()}đ
+                </Text>
+              )}
+              {promoError && (
+                <Text style={{ color: '#ff4d4f', fontSize: 12, marginTop: 4, display: 'block' }}>
+                  {promoError}
+                </Text>
+              )}
+            </div>
+            <Divider />
             <div style={{ marginBottom: 20 }}>
               <Text type="secondary">Tổng tiền:</Text>
               <br />
-              <Text strong style={{ fontSize: 26, color: '#008080' }}>
-                {totalPrice.toLocaleString()}đ
-              </Text>
+              {promoResult ? (
+                <>
+                  <Text delete type="secondary" style={{ fontSize: 16 }}>{totalPrice.toLocaleString()}đ</Text>
+                  <br />
+                  <Text strong style={{ fontSize: 26, color: '#008080' }}>
+                    {promoResult.finalPrice?.toLocaleString()}đ
+                  </Text>
+                </>
+              ) : (
+                <Text strong style={{ fontSize: 26, color: '#008080' }}>
+                  {totalPrice.toLocaleString()}đ
+                </Text>
+              )}
             </div>
             <Button
               type="primary"

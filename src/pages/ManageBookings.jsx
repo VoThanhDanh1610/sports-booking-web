@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import { Card, Table, Tag, Button, Typography, Select, Space, Empty } from 'antd';
+import { Card, Table, Tag, Button, Typography, Select, Space, Empty, Radio } from 'antd';
 import { ArrowLeftOutlined, ScheduleOutlined } from '@ant-design/icons';
 import { jwtDecode } from 'jwt-decode';
 
@@ -25,8 +25,9 @@ const STATUS_LABEL = {
 function ManageBookings() {
   const navigate = useNavigate();
   const [fields, setFields] = useState([]);
-  const [selectedField, setSelectedField] = useState(null);
-  const [bookings, setBookings] = useState([]);
+  const [allBookings, setAllBookings] = useState([]);
+  const [selectedField, setSelectedField] = useState('all');
+  const [selectedStatus, setSelectedStatus] = useState('all');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -35,52 +36,38 @@ function ManageBookings() {
     try {
       const decoded = jwtDecode(token);
       if (decoded.role !== 'Owner' && decoded.role !== 'Admin') {
-        toast.error('Bạn không có quyền truy cập!');
-        navigate('/');
-        return;
+        navigate('/'); return;
       }
-    } catch {
-      navigate('/login');
-      return;
-    }
-    fetchMyFields();
+    } catch { navigate('/login'); return; }
+    fetchAll();
   }, []);
 
-  const fetchMyFields = async () => {
+  const fetchAll = async () => {
     const token = localStorage.getItem('token');
+    setLoading(true);
     try {
       const res = await axios.get('http://localhost:5000/api/fields', {
         headers: { Authorization: `Bearer ${token}` }
       });
-      const allFields = res.data.data || res.data;
-      setFields(allFields);
-      if (allFields.length > 0) {
-        setSelectedField(allFields[0]._id);
-        fetchBookingsByField(allFields[0]._id);
-      }
-    } catch {
-      toast.error('Không thể tải danh sách sân!');
-    }
-  };
+      const fieldList = res.data.data || res.data;
+      setFields(fieldList);
+      if (fieldList.length === 0) { setLoading(false); return; }
 
-  const fetchBookingsByField = async (fieldId) => {
-    const token = localStorage.getItem('token');
-    setLoading(true);
-    try {
-      const res = await axios.get(`http://localhost:5000/api/bookings/field/${fieldId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setBookings(res.data);
+      const results = await Promise.all(
+        fieldList.map(f =>
+          axios.get(`http://localhost:5000/api/bookings/field/${f._id}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          }).then(r => r.data.map(b => ({ ...b, fieldName: f.name })))
+            .catch(() => [])
+        )
+      );
+      const combined = results.flat().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      setAllBookings(combined);
     } catch {
-      toast.error('Không thể tải danh sách đặt sân!');
+      toast.error('Không thể tải dữ liệu!');
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleFieldChange = (fieldId) => {
-    setSelectedField(fieldId);
-    fetchBookingsByField(fieldId);
   };
 
   const handleUpdateStatus = async (bookingId, status) => {
@@ -92,13 +79,22 @@ function ManageBookings() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       toast.success('Cập nhật trạng thái thành công!');
-      fetchBookingsByField(selectedField);
+      fetchAll();
     } catch (error) {
       toast.error(error.response?.data?.message || 'Cập nhật thất bại!');
     }
   };
 
+  const displayedBookings = allBookings
+    .filter(b => selectedField === 'all' || String(b.field?._id || b.field) === selectedField)
+    .filter(b => selectedStatus === 'all' || b.status === selectedStatus);
+
   const columns = [
+    {
+      title: 'Sân',
+      key: 'fieldName',
+      render: (_, r) => <Text strong style={{ color: '#008080' }}>{r.fieldName || r.field?.name}</Text>
+    },
     {
       title: 'Khách hàng',
       dataIndex: ['customer', 'fullName'],
@@ -119,14 +115,15 @@ function ManageBookings() {
     {
       title: 'Giờ',
       key: 'time',
-      render: (_, record) => `${record.startTime} - ${record.endTime}`
+      render: (_, r) => `${r.startTime} - ${r.endTime}`
     },
     {
       title: 'Tổng tiền',
-      dataIndex: 'totalPrice',
-      key: 'totalPrice',
-      render: (price) => (
-        <Text strong style={{ color: '#008080' }}>{price.toLocaleString()}đ</Text>
+      key: 'price',
+      render: (_, r) => (
+        <Text strong style={{ color: '#008080' }}>
+          {(r.finalPrice ?? r.totalPrice).toLocaleString()}đ
+        </Text>
       )
     },
     {
@@ -145,31 +142,20 @@ function ManageBookings() {
       render: (_, record) => (
         <Space>
           {record.status === 'pending' && (
-            <Button
-              size="small"
-              type="primary"
-              style={{ borderRadius: 6 }}
-              onClick={() => handleUpdateStatus(record._id, 'confirmed')}
-            >
+            <Button size="small" type="primary" style={{ borderRadius: 6 }}
+              onClick={() => handleUpdateStatus(record._id, 'confirmed')}>
               Xác nhận
             </Button>
           )}
           {record.status === 'confirmed' && (
-            <Button
-              size="small"
-              style={{ borderRadius: 6, borderColor: '#008080', color: '#008080' }}
-              onClick={() => handleUpdateStatus(record._id, 'completed')}
-            >
+            <Button size="small" style={{ borderRadius: 6, borderColor: '#008080', color: '#008080' }}
+              onClick={() => handleUpdateStatus(record._id, 'completed')}>
               Hoàn thành
             </Button>
           )}
           {(record.status === 'pending' || record.status === 'confirmed') && (
-            <Button
-              size="small"
-              danger
-              style={{ borderRadius: 6 }}
-              onClick={() => handleUpdateStatus(record._id, 'cancelled')}
-            >
+            <Button size="small" danger style={{ borderRadius: 6 }}
+              onClick={() => handleUpdateStatus(record._id, 'cancelled')}>
               Hủy
             </Button>
           )}
@@ -180,11 +166,7 @@ function ManageBookings() {
 
   return (
     <div style={{ padding: '40px 50px', backgroundColor: '#fcfcfd', minHeight: '100vh' }}>
-      <Button
-        icon={<ArrowLeftOutlined />}
-        onClick={() => navigate('/')}
-        style={{ marginBottom: 20, borderRadius: 8 }}
-      >
+      <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/')} style={{ marginBottom: 20, borderRadius: 8 }}>
         Quay lại
       </Button>
 
@@ -193,23 +175,46 @@ function ManageBookings() {
       </Title>
 
       <Card style={{ borderRadius: 16, boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-        <div style={{ marginBottom: 20 }}>
-          <Text strong>Chọn sân: </Text>
+        <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+          <Text strong>Sân:</Text>
           <Select
             value={selectedField}
-            onChange={handleFieldChange}
-            style={{ width: 300, marginLeft: 8 }}
-            options={fields.map(f => ({ value: f._id, label: f.name }))}
-            placeholder="-- Chọn sân --"
+            onChange={setSelectedField}
+            style={{ width: 240 }}
+            options={[
+              { value: 'all', label: 'Tất cả sân' },
+              ...fields.map(f => ({ value: f._id, label: f.name }))
+            ]}
           />
+          <Text strong style={{ marginLeft: 8 }}>Trạng thái:</Text>
+          <Radio.Group
+            value={selectedStatus}
+            onChange={e => setSelectedStatus(e.target.value)}
+            buttonStyle="solid"
+          >
+            <Radio.Button value="all">Tất cả</Radio.Button>
+            <Radio.Button value="pending">
+              <Tag color="gold" style={{ margin: 0, borderRadius: 4 }}>Chờ xác nhận</Tag>
+            </Radio.Button>
+            <Radio.Button value="confirmed">
+              <Tag color="cyan" style={{ margin: 0, borderRadius: 4 }}>Đã xác nhận</Tag>
+            </Radio.Button>
+            <Radio.Button value="completed">
+              <Tag color="green" style={{ margin: 0, borderRadius: 4 }}>Hoàn thành</Tag>
+            </Radio.Button>
+            <Radio.Button value="cancelled">
+              <Tag color="red" style={{ margin: 0, borderRadius: 4 }}>Đã hủy</Tag>
+            </Radio.Button>
+          </Radio.Group>
+          <Text type="secondary">({displayedBookings.length} đơn)</Text>
         </div>
 
-        {!loading && bookings.length === 0 ? (
-          <Empty description="Chưa có đặt sân nào cho sân này" />
+        {!loading && displayedBookings.length === 0 ? (
+          <Empty description="Chưa có đơn đặt sân nào" />
         ) : (
           <Table
             columns={columns}
-            dataSource={bookings}
+            dataSource={displayedBookings}
             rowKey="_id"
             loading={loading}
             pagination={{ pageSize: 10 }}
