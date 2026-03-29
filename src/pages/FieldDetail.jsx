@@ -3,7 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { Row, Col, Typography, Tag, Button, Rate, Input, Card, Divider, Descriptions, Spin, Empty } from 'antd';
-import { EnvironmentOutlined, DollarCircleOutlined, SendOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+import { EnvironmentOutlined, DollarCircleOutlined, SendOutlined, ArrowLeftOutlined, CalendarOutlined } from '@ant-design/icons';
+import { jwtDecode } from 'jwt-decode';
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -94,6 +95,26 @@ function FieldDetail() {
             </Descriptions>
 
             <Divider />
+
+            {/* Nút Đặt sân - chỉ hiện với Customer */}
+            {(() => {
+              const token = localStorage.getItem('token');
+              let role = null;
+              if (token) { try { role = jwtDecode(token).role; } catch {} }
+              return role === 'Customer' ? (
+                <Button
+                  type="primary"
+                  size="large"
+                  icon={<CalendarOutlined />}
+                  block
+                  onClick={() => navigate(`/booking/${id}`)}
+                  style={{ marginBottom: 16, height: 50, borderRadius: 12, fontWeight: 'bold' }}
+                >
+                  ĐẶT SÂN NGAY
+                </Button>
+              ) : null;
+            })()}
+
             <Title level={4}>Mô tả</Title>
             <Paragraph style={{ color: '#666', lineHeight: 1.8 }}>
               {field.description || "Sân bóng tiêu chuẩn quốc tế, trang thiết bị hiện đại, thảm trải sàn chống trơn trượt, hệ thống chiếu sáng chuẩn thi đấu. Rất phù hợp cho các giải đấu phong trào và tập luyện nâng cao."}

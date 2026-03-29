@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { Layout, Button, Space } from 'antd';
-import { HomeOutlined, LoginOutlined, LogoutOutlined, CoffeeOutlined } from '@ant-design/icons';
+import { HomeOutlined, LoginOutlined, LogoutOutlined, CoffeeOutlined, CalendarOutlined, ScheduleOutlined } from '@ant-design/icons';
 import { jwtDecode } from "jwt-decode"; // Thư viện để "đọc" nội dung bên trong Token
 
 const { Header } = Layout;
@@ -46,16 +46,36 @@ function Navbar() {
         </Button>
 
         {/* --- BƯỚC 2: PHÂN QUYỀN HIỂN THỊ --- */}
-        {/* Chỉ hiện nút "Quản lý sân" nếu người dùng có vai trò là Owner */}
-        {userRole === 'Owner' && (
-          <Button 
-            type="text" 
-            icon={<CoffeeOutlined />} 
-            onClick={() => navigate('/manage-fields')}
+        {userRole === 'Customer' && (
+          <Button
+            type="text"
+            icon={<CalendarOutlined />}
+            onClick={() => navigate('/my-bookings')}
             style={{ color: '#008080', fontWeight: 'bold' }}
           >
-            Quản lý sân
+            Đặt sân của tôi
           </Button>
+        )}
+
+        {userRole === 'Owner' && (
+          <>
+            <Button
+              type="text"
+              icon={<CoffeeOutlined />}
+              onClick={() => navigate('/manage-fields')}
+              style={{ color: '#008080', fontWeight: 'bold' }}
+            >
+              Quản lý sân
+            </Button>
+            <Button
+              type="text"
+              icon={<ScheduleOutlined />}
+              onClick={() => navigate('/manage-bookings')}
+              style={{ color: '#008080', fontWeight: 'bold' }}
+            >
+              Quản lý đặt sân
+            </Button>
+          </>
         )}
 
         {token ? (

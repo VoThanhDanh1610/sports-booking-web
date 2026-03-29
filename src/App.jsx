@@ -5,6 +5,9 @@ import Register from './pages/Register';
 import FieldDetail from './pages/FieldDetail';
 import Navbar from './components/Navbar';
 import ManageFields from './pages/ManageFields';
+import BookingPage from './pages/BookingPage';
+import MyBookings from './pages/MyBookings';
+import ManageBookings from './pages/ManageBookings';
 
 // 1. Nhúng thư viện Toastify
 import { ToastContainer } from 'react-toastify';
@@ -52,6 +55,9 @@ function App() {
           <Route path="/field/:id" element={<FieldDetail />} />
           <Route path="/register" element={<Register />} />
           <Route path="/manage-fields" element={<ManageFields />} />
+          <Route path="/booking/:fieldId" element={<BookingPage />} />
+          <Route path="/my-bookings" element={<MyBookings />} />
+          <Route path="/manage-bookings" element={<ManageBookings />} />
         </Routes>
       </BrowserRouter>
     </ConfigProvider>
