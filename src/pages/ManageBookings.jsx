@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import { Card, Table, Tag, Button, Typography, Select, Space, Empty, Radio } from 'antd';
 import { ArrowLeftOutlined, ScheduleOutlined } from '@ant-design/icons';
 import { jwtDecode } from 'jwt-decode';
+import socket from '../socket';
 
 const { Title, Text } = Typography;
 
@@ -40,6 +41,10 @@ function ManageBookings() {
       }
     } catch { navigate('/login'); return; }
     fetchAll();
+
+    const handleNewBooking = () => fetchAll();
+    socket.on('newBooking', handleNewBooking);
+    return () => socket.off('newBooking', handleNewBooking);
   }, []);
 
   const fetchAll = async () => {
@@ -141,19 +146,7 @@ function ManageBookings() {
       key: 'action',
       render: (_, record) => (
         <Space>
-          {record.status === 'pending' && (
-            <Button size="small" type="primary" style={{ borderRadius: 6 }}
-              onClick={() => handleUpdateStatus(record._id, 'confirmed')}>
-              Xác nhận
-            </Button>
-          )}
           {record.status === 'confirmed' && (
-            <Button size="small" style={{ borderRadius: 6, borderColor: '#008080', color: '#008080' }}
-              onClick={() => handleUpdateStatus(record._id, 'completed')}>
-              Hoàn thành
-            </Button>
-          )}
-          {(record.status === 'pending' || record.status === 'confirmed') && (
             <Button size="small" danger style={{ borderRadius: 6 }}
               onClick={() => handleUpdateStatus(record._id, 'cancelled')}>
               Hủy

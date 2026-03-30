@@ -106,7 +106,7 @@ function BookingPage() {
     }
     setSubmitting(true);
     try {
-      await axios.post(
+      const res = await axios.post(
         'http://localhost:5000/api/bookings',
         {
           fieldId,
@@ -116,8 +116,8 @@ function BookingPage() {
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      toast.success('Đặt sân thành công! 🎉');
-      navigate('/my-bookings');
+      toast.success('Đặt sân thành công! Đang chuyển sang thanh toán...');
+      window.location.href = res.data.checkoutUrl;
     } catch (error) {
       toast.error(error.response?.data?.message || 'Đặt sân thất bại!');
     } finally {
