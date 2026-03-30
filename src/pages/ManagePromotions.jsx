@@ -163,8 +163,13 @@ function ManagePromotions() {
         confirmLoading={submitting}
       >
         <Form form={form} layout="vertical" onFinish={handleCreate}>
-          <Form.Item name="code" label="Mã giảm giá" rules={[{ required: true, message: 'Nhập mã!' }]}>
-            <Input placeholder="VD: SUMMER20" style={{ textTransform: 'uppercase' }} />
+          <Form.Item
+            name="code"
+            label="Mã giảm giá"
+            rules={[{ required: true, message: 'Nhập mã!' }]}
+            getValueFromEvent={e => e.target.value.toUpperCase()}
+          >
+            <Input placeholder="VD: SUMMER20" />
           </Form.Item>
           <Form.Item name="discountType" label="Loại giảm" rules={[{ required: true }]}>
             <Select placeholder="Chọn loại">
@@ -175,8 +180,8 @@ function ManagePromotions() {
           <Form.Item name="discountValue" label="Giá trị giảm" rules={[{ required: true, message: 'Nhập giá trị!' }]}>
             <InputNumber style={{ width: '100%' }} min={1} placeholder="VD: 20 hoặc 50000" />
           </Form.Item>
-          <Form.Item name="minOrderValue" label="Đơn hàng tối thiểu (đ)">
-            <InputNumber style={{ width: '100%' }} min={0} defaultValue={0} />
+          <Form.Item name="minOrderValue" label="Đơn hàng tối thiểu (đ)" initialValue={0}>
+            <InputNumber style={{ width: '100%' }} min={0} />
           </Form.Item>
           <Form.Item name="maxUsage" label="Số lượt dùng tối đa" rules={[{ required: true }]}>
             <InputNumber style={{ width: '100%' }} min={1} />

@@ -15,6 +15,7 @@ import ManageBookings from './pages/ManageBookings';
 import MyPayments from './pages/MyPayments';
 import ManagePayments from './pages/ManagePayments';
 import ManagePromotions from './pages/ManagePromotions';
+import PaymentReturn from './pages/PaymentReturn';
 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -99,6 +100,7 @@ function App() {
           <Route path="/my-payments" element={<MyPayments />} />
           <Route path="/manage-payments" element={<ManagePayments />} />
           <Route path="/manage-promotions" element={<ManagePromotions />} />
+          <Route path="/payment/return" element={<PaymentReturn />} />
         </Routes>
       </BrowserRouter>
     </ConfigProvider>
