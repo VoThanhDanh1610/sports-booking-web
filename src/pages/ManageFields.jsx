@@ -198,6 +198,7 @@ function ManageFields() {
           <Form.Item label="Hình ảnh sân (Tối đa 5 ảnh)">
             <Upload
               action="http://localhost:5000/api/fields/upload"
+              headers={{ Authorization: `Bearer ${token}` }}
               listType="picture-card"
               fileList={fileList}
               onChange={handleChangeImage}
