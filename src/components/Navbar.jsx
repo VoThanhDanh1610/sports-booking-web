@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Layout, Button, Space, Badge } from 'antd';
-import { HomeOutlined, LoginOutlined, LogoutOutlined, CoffeeOutlined, CalendarOutlined, ScheduleOutlined, WalletOutlined, TagOutlined } from '@ant-design/icons';
+import { HomeOutlined, LoginOutlined, LogoutOutlined, CoffeeOutlined, CalendarOutlined, ScheduleOutlined, WalletOutlined, TagOutlined, ShopOutlined } from '@ant-design/icons';
 import socket from '../socket';
 import { jwtDecode } from "jwt-decode";
 
@@ -84,6 +84,9 @@ function Navbar() {
 
         {userRole === 'Owner' && (
           <>
+            <Button type="text" icon={<ShopOutlined />} onClick={() => navigate('/manage-venues')} style={{ color: '#008080', fontWeight: 'bold' }}>
+              Quản lý khu
+            </Button>
             <Button type="text" icon={<CoffeeOutlined />} onClick={() => navigate('/manage-fields')} style={{ color: '#008080', fontWeight: 'bold' }}>
               Quản lý sân
             </Button>
