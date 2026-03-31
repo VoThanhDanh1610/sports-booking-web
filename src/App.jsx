@@ -19,6 +19,7 @@ import PaymentReturn from './pages/PaymentReturn';
 import ManageVenues from './pages/ManageVenues';
 import VenueDetail from './pages/VenueDetail';
 import ManageCategories from './pages/ManageCategories';
+import MyFavorites from './pages/MyFavorites';
 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -107,6 +108,7 @@ function App() {
           <Route path="/manage-venues" element={<ManageVenues />} />
           <Route path="/venue/:id" element={<VenueDetail />} />
           <Route path="/manage-categories" element={<ManageCategories />} />
+          <Route path="/my-favorites" element={<MyFavorites />} />
         </Routes>
       </BrowserRouter>
     </ConfigProvider>
