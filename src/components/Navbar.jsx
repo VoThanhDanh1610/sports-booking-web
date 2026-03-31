@@ -11,7 +11,8 @@ import {
   TagOutlined, 
   ShopOutlined, 
   AppstoreAddOutlined, 
-  DashboardOutlined 
+  DashboardOutlined,
+  HeartOutlined 
 } from '@ant-design/icons';
 import socket from '../socket';
 import { jwtDecode } from "jwt-decode";
@@ -73,6 +74,12 @@ function Navbar() {
       icon: <WalletOutlined />,
       label: 'Lịch sử thanh toán',
       onClick: () => navigate('/my-payments')
+    }, // <--- PHẢI CÓ DẤU PHẨY Ở ĐÂY
+    {
+      key: '3',
+      icon: <HeartOutlined />,
+      label: 'Sân yêu thích',
+      onClick: () => navigate('/my-favorites')
     }
   ];
 
