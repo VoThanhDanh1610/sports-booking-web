@@ -18,6 +18,7 @@ import ManagePromotions from './pages/ManagePromotions';
 import PaymentReturn from './pages/PaymentReturn';
 import ManageVenues from './pages/ManageVenues';
 import VenueDetail from './pages/VenueDetail';
+import ManageCategories from './pages/ManageCategories';
 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -105,6 +106,7 @@ function App() {
           <Route path="/payment/return" element={<PaymentReturn />} />
           <Route path="/manage-venues" element={<ManageVenues />} />
           <Route path="/venue/:id" element={<VenueDetail />} />
+          <Route path="/manage-categories" element={<ManageCategories />} />
         </Routes>
       </BrowserRouter>
     </ConfigProvider>
