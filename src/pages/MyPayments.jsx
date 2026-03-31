@@ -48,24 +48,18 @@ function MyPayments() {
       render: (amount) => <Text strong style={{ color: '#008080' }}>{amount?.toLocaleString()}đ</Text>
     },
     {
-      title: 'Loại',
-      dataIndex: 'type',
-      key: 'type',
-      render: (type) => (
-        <Tag color={type === 'payment' ? 'cyan' : 'orange'} style={{ borderRadius: 6 }}>
-          {type === 'payment' ? 'Thanh toán' : 'Hoàn tiền'}
-        </Tag>
-      )
-    },
-    {
       title: 'Trạng thái',
       dataIndex: 'status',
       key: 'status',
-      render: (status) => (
-        <Tag color={status === 'completed' ? 'green' : 'red'} style={{ borderRadius: 6 }}>
-          {status === 'completed' ? 'Hoàn thành' : 'Đã hoàn tiền'}
-        </Tag>
-      )
+      render: (status) => {
+        const map = {
+          completed:       { color: 'green',  label: 'Đã thanh toán' },
+          pending_payment: { color: 'gold',   label: 'Chờ thanh toán' },
+          cancelled:       { color: 'red',    label: 'Đã hủy' }
+        };
+        const { color, label } = map[status] || { color: 'default', label: status };
+        return <Tag color={color} style={{ borderRadius: 6 }}>{label}</Tag>;
+      }
     },
     {
       title: 'Ngày giao dịch',

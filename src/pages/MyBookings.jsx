@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import { Card, Table, Tag, Button, Typography, Empty, Popconfirm } from 'antd';
-import { ArrowLeftOutlined, CalendarOutlined } from '@ant-design/icons';
+import { Card, Table, Tag, Button, Typography, Empty, Popconfirm, Space } from 'antd';
+import { ArrowLeftOutlined, CalendarOutlined, CreditCardOutlined } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
 
@@ -24,7 +24,9 @@ const STATUS_LABEL = {
 function MyBookings() {
   const navigate = useNavigate();
   const [bookings, setBookings] = useState([]);
+  const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [payingId, setPayingId] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -34,7 +36,18 @@ function MyBookings() {
       return;
     }
     fetchBookings();
+    fetchPayments();
   }, []);
+
+  const fetchPayments = async () => {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await axios.get('http://localhost:5000/api/payments/my', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setPayments(res.data);
+    } catch { /* bỏ qua */ }
+  };
 
   const fetchBookings = async () => {
     const token = localStorage.getItem('token');
@@ -47,6 +60,22 @@ function MyBookings() {
       toast.error('Không thể tải lịch sử đặt sân!');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePay = async (bookingId) => {
+    const token = localStorage.getItem('token');
+    setPayingId(bookingId);
+    try {
+      const res = await axios.post(
+        'http://localhost:5000/api/payments/create-link',
+        { bookingId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      window.location.href = res.data.checkoutUrl;
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Không thể tạo link thanh toán!');
+      setPayingId(null);
     }
   };
 
@@ -109,18 +138,37 @@ function MyBookings() {
     {
       title: 'Hành động',
       key: 'action',
-      render: (_, record) =>
-        record.status === 'pending' || record.status === 'confirmed' ? (
-          <Popconfirm
-            title="Xác nhận hủy đặt sân?"
-            onConfirm={() => handleCancel(record._id)}
-            okText="Hủy đặt"
-            cancelText="Không"
-            okButtonProps={{ danger: true }}
-          >
-            <Button danger size="small" style={{ borderRadius: 6 }}>Hủy</Button>
-          </Popconfirm>
-        ) : null
+      render: (_, record) => {
+        const payment = payments.find(p => p.booking?._id === record._id || p.booking === record._id);
+        const isPendingPayment = record.status === 'confirmed' && payment?.status === 'pending_payment';
+        return (
+          <Space>
+            {isPendingPayment && (
+              <Button
+                size="small"
+                type="primary"
+                icon={<CreditCardOutlined />}
+                loading={payingId === record._id}
+                onClick={() => handlePay(record._id)}
+                style={{ borderRadius: 6, backgroundColor: '#008080', borderColor: '#008080' }}
+              >
+                Thanh toán
+              </Button>
+            )}
+            {record.status === 'pending' && (
+              <Popconfirm
+                title="Xác nhận hủy đặt sân?"
+                onConfirm={() => handleCancel(record._id)}
+                okText="Hủy đặt"
+                cancelText="Không"
+                okButtonProps={{ danger: true }}
+              >
+                <Button danger size="small" style={{ borderRadius: 6 }}>Hủy</Button>
+              </Popconfirm>
+            )}
+          </Space>
+        );
+      }
     }
   ];
 
