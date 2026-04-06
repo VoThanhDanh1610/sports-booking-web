@@ -98,15 +98,16 @@ function Navbar() {
           </>
         )}
 
+        {userRole === 'Owner' && (
+          <Button type="text" icon={<TagOutlined />} onClick={() => navigate('/manage-promotions')} style={{ color: '#008080', fontWeight: 'bold' }}>
+            Mã giảm giá
+          </Button>
+        )}
+
         {userRole === 'Admin' && (
-          <>
-            <Button type="text" icon={<WalletOutlined />} onClick={() => navigate('/manage-payments')} style={{ color: '#008080', fontWeight: 'bold' }}>
-              Quản lý thanh toán
-            </Button>
-            <Button type="text" icon={<TagOutlined />} onClick={() => navigate('/manage-promotions')} style={{ color: '#008080', fontWeight: 'bold' }}>
-              Mã giảm giá
-            </Button>
-          </>
+          <Button type="text" icon={<WalletOutlined />} onClick={() => navigate('/manage-users')} style={{ color: '#008080', fontWeight: 'bold' }}>
+            Quản lý người dùng
+          </Button>
         )}
 
         {token ? (
