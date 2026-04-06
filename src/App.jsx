@@ -18,8 +18,12 @@ import ManagePromotions from './pages/ManagePromotions';
 import PaymentReturn from './pages/PaymentReturn';
 import ManageVenues from './pages/ManageVenues';
 import VenueDetail from './pages/VenueDetail';
+<<<<<<< HEAD
+import ManageUsers from './pages/ManageUsers';
+=======
 import ManageCategories from './pages/ManageCategories';
 import MyFavorites from './pages/MyFavorites';
+>>>>>>> c0a1ad870691fc2b2aafa2d1ebe4794ea1504942
 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -107,8 +111,12 @@ function App() {
           <Route path="/payment/return" element={<PaymentReturn />} />
           <Route path="/manage-venues" element={<ManageVenues />} />
           <Route path="/venue/:id" element={<VenueDetail />} />
+<<<<<<< HEAD
+          <Route path="/manage-users" element={<ManageUsers />} />
+=======
           <Route path="/manage-categories" element={<ManageCategories />} />
           <Route path="/my-favorites" element={<MyFavorites />} />
+>>>>>>> c0a1ad870691fc2b2aafa2d1ebe4794ea1504942
         </Routes>
       </BrowserRouter>
     </ConfigProvider>

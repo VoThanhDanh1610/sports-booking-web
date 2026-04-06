@@ -22,7 +22,7 @@ function ManagePromotions() {
     if (!token) { navigate('/login'); return; }
     try {
       const { role } = jwtDecode(token);
-      if (role !== 'Admin') { navigate('/'); return; }
+      if (role !== 'Owner') { navigate('/'); return; }
     } catch { navigate('/login'); return; }
     fetchPromos();
   }, []);

@@ -194,6 +194,19 @@ function Navbar() {
         </div>
       </Header>
 
+<<<<<<< HEAD
+        {userRole === 'Owner' && (
+          <Button type="text" icon={<TagOutlined />} onClick={() => navigate('/manage-promotions')} style={{ color: '#008080', fontWeight: 'bold' }}>
+            Mã giảm giá
+          </Button>
+        )}
+
+        {userRole === 'Admin' && (
+          <Button type="text" icon={<WalletOutlined />} onClick={() => navigate('/manage-users')} style={{ color: '#008080', fontWeight: 'bold' }}>
+            Quản lý người dùng
+          </Button>
+        )}
+=======
       <style>{`
         .glass-navbar {
           background: rgba(255, 255, 255, 0.9) !important;
@@ -203,6 +216,7 @@ function Navbar() {
           box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
           transition: all 0.3s ease;
         }
+>>>>>>> c0a1ad870691fc2b2aafa2d1ebe4794ea1504942
 
         .navbar-brand {
           display: flex;
